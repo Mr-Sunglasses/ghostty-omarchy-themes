@@ -23,3 +23,13 @@ palette = 12=#c4d2ed
 palette = 13=#cddbf4
 palette = 14=#d1fffe
 palette = 15=#ddf7ff
+
+# Matching app icon and split divider, so they change along with the theme.
+# The macos-icon-* settings only affect macOS. To keep your own icon or
+# divider, set them in your Ghostty config: it takes precedence over the theme
+# (for example `macos-icon = official`).
+macos-icon = custom-style
+macos-icon-frame = plastic
+macos-icon-ghost-color = #ddf7ff
+macos-icon-screen-color = #0B0C16,#1f253a
+split-divider-color = #82FB9C

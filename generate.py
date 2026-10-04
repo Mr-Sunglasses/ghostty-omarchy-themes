@@ -3,7 +3,8 @@
 
 Reads each theme's colors.toml from an Omarchy checkout, resolves the palette
 with the same alias/fallback cascade as Omarchy's bin/omarchy-theme-color, and
-renders Omarchy's own default/themed/ghostty.conf.tpl into themes/.
+renders Omarchy's own default/themed/ghostty.conf.tpl into themes/. Each theme
+also sets a matching macOS app icon and split divider color (see extras()).
 
 Usage: ./generate.py [path-to-omarchy-checkout]
        (clones https://github.com/omacom/omarchy into a temp dir if omitted)
@@ -91,8 +92,41 @@ def render(template, colors, name):
     return re.sub(r"\{\{\s*([A-Za-z0-9_]+)\s*\}\}", sub, template)
 
 
-def preview_svg(body, label):
-    """Draw the theme's background, foreground text and 16-color palette."""
+def is_light(colors):
+    mode = colors.get("mode") or colors.get("theme_type")
+    if mode:
+        return mode == "light"
+    bg = colors["background"]
+    return sum(int(bg[i : i + 2], 16) for i in (1, 3, 5)) > 382
+
+
+def extras(colors):
+    """Settings beyond colors that should follow the theme when it changes.
+
+    Ghostty's custom-style app icon is drawn from these colors, so switching
+    theme also recolors the Dock icon: the ghost uses the cursor color and the
+    screen is a gradient from the background to the selection color.
+    """
+    return {
+        "macos-icon": "custom-style",
+        "macos-icon-frame": "aluminum" if is_light(colors) else "plastic",
+        "macos-icon-ghost-color": colors["bright_foreground"],
+        "macos-icon-screen-color": f'{colors["background"]},{colors["selection_background"]}',
+        "split-divider-color": colors.get("accent") or colors["blue"],
+    }
+
+
+EXTRAS_HEADER = """\
+# Matching app icon and split divider, so they change along with the theme.
+# The macos-icon-* settings only affect macOS. To keep your own icon or
+# divider, set them in your Ghostty config: it takes precedence over the theme
+# (for example `macos-icon = official`)."""
+
+FRAME_FILL = {"plastic": "#1d1d1f", "aluminum": "#c9cbcf"}
+
+
+def preview_svg(body, label, icon):
+    """Draw the theme's colors, 16-color palette and app icon colors."""
     values = dict(re.findall(r"^([a-z-]+) = (#[0-9A-Fa-f]{6})$", body, re.M))
     palette = dict(re.findall(r"^palette = (\d+)=(#[0-9A-Fa-f]{6})$", body, re.M))
     bg, fg = values["background"], values["foreground"]
@@ -100,11 +134,23 @@ def preview_svg(body, label):
         f'<rect x="{16 + (i % 8) * 46}" y="{48 + (i // 8) * 30}" width="40" height="24" rx="4" fill="{palette[str(i)]}"/>'
         for i in range(16)
     )
+    # Icon swatch: frame, gradient screen, and a simple ghost in the ghost color.
+    screen_from, screen_to = icon["macos-icon-screen-color"].split(",")
+    ghost = icon["macos-icon-ghost-color"]
+    icon_svg = (
+        f'<defs><linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">'
+        f'<stop offset="0" stop-color="{screen_from}"/><stop offset="1" stop-color="{screen_to}"/>'
+        f"</linearGradient></defs>"
+        f'<rect x="398" y="30" width="72" height="72" rx="16" fill="{FRAME_FILL[icon["macos-icon-frame"]]}"/>'
+        f'<rect x="405" y="37" width="58" height="58" rx="11" fill="url(#screen)"/>'
+        f'<path d="M422 84 V62 a12 12 0 0 1 24 0 V84 l-4-4 -4 4 -4-4 -4 4 -4-4 z" fill="{ghost}"/>'
+        f'<circle cx="430" cy="63" r="2.2" fill="{screen_from}"/><circle cx="438" cy="63" r="2.2" fill="{screen_from}"/>'
+    )
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="400" height="124" viewBox="0 0 400 124">'
-        f'<rect width="400" height="124" rx="8" fill="{bg}" stroke="{palette["8"]}"/>'
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="486" height="124" viewBox="0 0 486 124">'
+        f'<rect width="486" height="124" rx="8" fill="{bg}" stroke="{palette["8"]}"/>'
         f'<text x="16" y="30" fill="{fg}" font-family="ui-monospace,Menlo,monospace" font-size="15">{label}</text>'
-        f"{cells}</svg>\n"
+        f"{cells}{icon_svg}</svg>\n"
     )
 
 
@@ -131,14 +177,13 @@ def main():
         # A theme may ship a hand-written Ghostty config; prefer it over the template.
         shipped = theme_dir / "ghostty.conf"
         name = "Omarchy " + NAME_OVERRIDES.get(slug, slug.replace("-", " ").title())
-        if shipped.exists():
-            body = shipped.read_text()
-        else:
-            colors = resolve(tomllib.loads(colors_file.read_text()))
-            body = render(template, colors, slug)
+        colors = resolve(tomllib.loads(colors_file.read_text()))
+        body = shipped.read_text() if shipped.exists() else render(template, colors, slug)
+        icon = extras(colors)
         header = f"# {name}\n# Ported from Omarchy theme '{slug}' ({REPO}, commit {commit or 'unknown'})\n\n"
-        (OUT_DIR / name).write_text(header + body.rstrip("\n") + "\n")
-        (PREVIEW_DIR / f"{slug}.svg").write_text(preview_svg(body, name))
+        extra_lines = "\n".join(f"{k} = {v}" for k, v in icon.items())
+        (OUT_DIR / name).write_text(f'{header}{body.rstrip(chr(10))}\n\n{EXTRAS_HEADER}\n{extra_lines}\n')
+        (PREVIEW_DIR / f"{slug}.svg").write_text(preview_svg(body, name, icon))
         print(f"{slug:18} -> themes/{name}")
 
 

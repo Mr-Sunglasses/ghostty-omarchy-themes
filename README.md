@@ -12,7 +12,7 @@ On macOS, each theme also recolors **Ghostty's app icon** and the **split divide
 curl -fsSL https://raw.githubusercontent.com/Mr-Sunglasses/ghostty-omarchy-themes/main/install.sh | bash
 ```
 
-Then pick a theme in your Ghostty config (`~/.config/ghostty/config`):
+Then pick a theme ([screenshots](#screenshots)) in your Ghostty config (`~/.config/ghostty/config`):
 
 ```
 theme = Omarchy Tokyo Night
@@ -73,6 +73,57 @@ ghostty +list-themes
 | Vantablack | Dark | `theme = Omarchy Vantablack` | <img src="previews/vantablack.svg" width="360" alt="Vantablack palette and icon colors"> |
 | White | Light | `theme = Omarchy White` | <img src="previews/white.svg" width="360" alt="White palette and icon colors"> |
 
+## Screenshots
+
+Each theme applied in Ghostty on macOS (default font, `ls`, `git` output, some code and the 16-color palette).
+
+<table>
+<tr>
+<td align="center"><b>Catppuccin Latte</b><br><img src="screenshots/catppuccin-latte.png" alt="Catppuccin Latte in Ghostty"></td>
+<td align="center"><b>Catppuccin Mocha</b><br><img src="screenshots/catppuccin.png" alt="Catppuccin Mocha in Ghostty"></td>
+</tr>
+<tr>
+<td align="center"><b>Ethereal</b><br><img src="screenshots/ethereal.png" alt="Ethereal in Ghostty"></td>
+<td align="center"><b>Everforest</b><br><img src="screenshots/everforest.png" alt="Everforest in Ghostty"></td>
+</tr>
+<tr>
+<td align="center"><b>Flexoki Light</b><br><img src="screenshots/flexoki-light.png" alt="Flexoki Light in Ghostty"></td>
+<td align="center"><b>Gruvbox</b><br><img src="screenshots/gruvbox.png" alt="Gruvbox in Ghostty"></td>
+</tr>
+<tr>
+<td align="center"><b>Hackerman</b><br><img src="screenshots/hackerman.png" alt="Hackerman in Ghostty"></td>
+<td align="center"><b>Kanagawa</b><br><img src="screenshots/kanagawa.png" alt="Kanagawa in Ghostty"></td>
+</tr>
+<tr>
+<td align="center"><b>Last Horizon</b><br><img src="screenshots/last-horizon.png" alt="Last Horizon in Ghostty"></td>
+<td align="center"><b>Lumon</b><br><img src="screenshots/lumon.png" alt="Lumon in Ghostty"></td>
+</tr>
+<tr>
+<td align="center"><b>Lupine</b><br><img src="screenshots/lupine.png" alt="Lupine in Ghostty"></td>
+<td align="center"><b>Matte Black</b><br><img src="screenshots/matte-black.png" alt="Matte Black in Ghostty"></td>
+</tr>
+<tr>
+<td align="center"><b>Miasma</b><br><img src="screenshots/miasma.png" alt="Miasma in Ghostty"></td>
+<td align="center"><b>Nord</b><br><img src="screenshots/nord.png" alt="Nord in Ghostty"></td>
+</tr>
+<tr>
+<td align="center"><b>Osaka Jade</b><br><img src="screenshots/osaka-jade.png" alt="Osaka Jade in Ghostty"></td>
+<td align="center"><b>Retro 82</b><br><img src="screenshots/retro-82.png" alt="Retro 82 in Ghostty"></td>
+</tr>
+<tr>
+<td align="center"><b>Ristretto</b><br><img src="screenshots/ristretto.png" alt="Ristretto in Ghostty"></td>
+<td align="center"><b>Rose Pine Dawn</b><br><img src="screenshots/rose-pine.png" alt="Rose Pine Dawn in Ghostty"></td>
+</tr>
+<tr>
+<td align="center"><b>Solitude</b><br><img src="screenshots/solitude.png" alt="Solitude in Ghostty"></td>
+<td align="center"><b>Tokyo Night</b><br><img src="screenshots/tokyo-night.png" alt="Tokyo Night in Ghostty"></td>
+</tr>
+<tr>
+<td align="center"><b>Vantablack</b><br><img src="screenshots/vantablack.png" alt="Vantablack in Ghostty"></td>
+<td align="center"><b>White</b><br><img src="screenshots/white.png" alt="White in Ghostty"></td>
+</tr>
+</table>
+
 ## Matching app icon
 
 Every theme file sets Ghostty's `custom-style` app icon in the theme's colors, along with a matching split divider:
@@ -107,6 +158,13 @@ Notes:
 ```sh
 ./generate.py                 # clones omarchy into a temp dir
 ./generate.py ~/src/omarchy   # or use an existing checkout
+```
+
+On macOS, [`screenshots.sh`](screenshots.sh) retakes the terminal screenshots by opening Ghostty with each theme and capturing the window (needs Screen Recording permission for your terminal):
+
+```sh
+./screenshots.sh                 # all themes
+./screenshots.sh "Tokyo Night"   # just one
 ```
 
 ## Credits

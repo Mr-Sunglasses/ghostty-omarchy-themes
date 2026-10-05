@@ -151,9 +151,23 @@ Notes:
 - Remove any `macos-icon*` or `split-divider-color` lines from your own config if you want the theme to control them.
 - Icon changes need a full restart of Ghostty (quit and reopen), not just a config reload.
 
+## Matching app themes
+
+[`apps/<theme>/`](apps) has matching themes for other apps, made from the same colors:
+
+| File | App | How it's made |
+|---|---|---|
+| `neovim.lua` | Neovim (LazyVim) | The Omarchy theme's own file, or Omarchy's template |
+| `btop.theme` | btop | The Omarchy theme's own file, or Omarchy's template |
+| `bat.tmTheme` | bat | Generated from the colors |
+| `tmux.conf` | tmux | Generated from the colors |
+| `colors.json` | Anything | The full resolved palette |
+
+[oms](https://github.com/Mr-Sunglasses/oms) can apply these for you along with the Ghostty theme and a wallpaper.
+
 ## Regenerating from upstream
 
-[`generate.py`](generate.py) (Python 3.11+, no dependencies) rebuilds `themes/` and `previews/` (including the icon colors) from the latest Omarchy. It resolves each palette with the same fallback rules as Omarchy's `omarchy-theme-color` and renders Omarchy's `default/themed/ghostty.conf.tpl`, so new themes and template changes upstream are picked up automatically.
+[`generate.py`](generate.py) (Python 3.11+, no dependencies) rebuilds `themes/`, `previews/` and `apps/` (including the icon colors) from the latest Omarchy. It resolves each palette with the same fallback rules as Omarchy's `omarchy-theme-color` and renders Omarchy's `default/themed/ghostty.conf.tpl`, so new themes and template changes upstream are picked up automatically.
 
 ```sh
 ./generate.py                 # clones omarchy into a temp dir

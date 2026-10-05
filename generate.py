@@ -6,11 +6,17 @@ with the same alias/fallback cascade as Omarchy's bin/omarchy-theme-color, and
 renders Omarchy's own default/themed/ghostty.conf.tpl into themes/. Each theme
 also sets a matching macOS app icon and split divider color (see extras()).
 
+apps/<theme>/ gets matching themes for other apps: Neovim and btop (the
+theme's own file, or Omarchy's template), bat and tmux (built here from the
+same colors), and colors.json with the resolved palette.
+
 Usage: ./generate.py [path-to-omarchy-checkout]
        (clones https://github.com/omacom/omarchy into a temp dir if omitted)
 """
 
+import json
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -19,6 +25,7 @@ from pathlib import Path
 
 OUT_DIR = Path(__file__).resolve().parent / "themes"
 PREVIEW_DIR = Path(__file__).resolve().parent / "previews"
+APPS_DIR = Path(__file__).resolve().parent / "apps"
 REPO = "https://github.com/omacom/omarchy"
 
 # Display names where title-casing the directory name isn't right.
@@ -154,6 +161,107 @@ def preview_svg(body, label, icon):
     )
 
 
+TMUX_TEMPLATE = """\
+# {{ name }} for tmux, generated from the Omarchy theme's colors.
+set -g status-style "bg={{ background }},fg={{ foreground }}"
+set -g status-left-style "fg={{ accent }},bold"
+set -g status-right-style "fg={{ muted }}"
+set -g window-status-style "fg={{ muted }}"
+set -g window-status-current-style "fg={{ accent }},bold"
+set -g pane-border-style "fg={{ muted }}"
+set -g pane-active-border-style "fg={{ accent }}"
+set -g message-style "bg={{ selection }},fg={{ bright_foreground }}"
+set -g message-command-style "bg={{ selection }},fg={{ bright_foreground }}"
+set -g mode-style "bg={{ selection }},fg={{ bright_foreground }}"
+set -g display-panes-active-colour "{{ accent }}"
+set -g display-panes-colour "{{ muted }}"
+set -g clock-mode-colour "{{ accent }}"
+"""
+
+# (scope, color key, font style) for the bat / TextMate theme.
+BAT_SCOPES = [
+    ("comment, punctuation.definition.comment", "muted", "italic"),
+    ("string, string.quoted", "green", ""),
+    ("constant.numeric, constant.language, constant.character", "orange", ""),
+    ("constant.other, variable.other.constant", "orange", ""),
+    ("keyword, storage, storage.type, storage.modifier", "magenta", ""),
+    ("keyword.operator, punctuation.separator, punctuation.accessor", "cyan", ""),
+    ("entity.name.function, support.function, meta.function-call", "blue", ""),
+    ("entity.name.type, entity.name.class, support.type, support.class", "yellow", ""),
+    ("entity.name.tag", "red", ""),
+    ("entity.other.attribute-name", "yellow", ""),
+    ("variable.parameter", "red", ""),
+    ("variable.language", "red", "italic"),
+    ("markup.heading, entity.name.section", "accent", "bold"),
+    ("markup.bold", "bright_foreground", "bold"),
+    ("markup.italic", "bright_foreground", "italic"),
+    ("markup.underline.link, string.other.link", "cyan", "underline"),
+    ("markup.inserted", "green", ""),
+    ("markup.deleted", "red", ""),
+    ("markup.changed", "yellow", ""),
+    ("invalid", "bright_red", ""),
+]
+
+
+def bat_theme(name, c):
+    def esc(s):
+        return s.replace("&", "&amp;").replace("<", "&lt;")
+
+    def setting(scope, color, style):
+        style_xml = f"<key>fontStyle</key><string>{style}</string>" if style else ""
+        return (
+            f"<dict><key>scope</key><string>{esc(scope)}</string><key>settings</key>"
+            f"<dict><key>foreground</key><string>{c[color]}</string>{style_xml}</dict></dict>"
+        )
+
+    rules = "\n".join(setting(*s) for s in BAT_SCOPES)
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+<key>name</key><string>{esc(name)}</string>
+<key>settings</key>
+<array>
+<dict><key>settings</key><dict>
+<key>background</key><string>{c["background"]}</string>
+<key>foreground</key><string>{c["foreground"]}</string>
+<key>caret</key><string>{c["bright_foreground"]}</string>
+<key>selection</key><string>{c["selection"]}</string>
+<key>lineHighlight</key><string>{c["selection"]}</string>
+<key>gutterForeground</key><string>{c["muted"]}</string>
+</dict></dict>
+{rules}
+</array>
+</dict>
+</plist>
+"""
+
+
+def app_files(src, theme_dir, colors, name, slug):
+    """Matching themes for other apps, keyed by file name."""
+    c = dict(colors)
+    c.setdefault("accent", c["blue"])
+    c.setdefault("orange", c["yellow"])
+    for key in ("dark_background", "darker_background", "lighter_background"):
+        c.setdefault(key, c["background"])
+    c.setdefault("light_foreground", c["foreground"])
+    c.setdefault("brown", c["orange"])
+    c["name"] = name
+
+    files = {}
+    for app, tpl in [("neovim.lua", "neovim.lua.tpl"), ("btop.theme", "btop.theme.tpl")]:
+        shipped = theme_dir / app
+        files[app] = shipped.read_text() if shipped.exists() else render((src / "default/themed" / tpl).read_text(), c, slug)
+    files["tmux.conf"] = render(TMUX_TEMPLATE, c, slug)
+    files["bat.tmTheme"] = bat_theme(name, c)
+    palette = {k: v for k, v in c.items() if isinstance(v, str) and v.startswith("#")}
+    files["colors.json"] = json.dumps(
+        {"name": name, "slug": slug, "mode": "light" if is_light(colors) else "dark", "colors": palette},
+        indent=2,
+    ) + "\n"
+    return files
+
+
 def main():
     if len(sys.argv) > 1:
         src = Path(sys.argv[1])
@@ -168,6 +276,7 @@ def main():
 
     OUT_DIR.mkdir(exist_ok=True)
     PREVIEW_DIR.mkdir(exist_ok=True)
+    shutil.rmtree(APPS_DIR, ignore_errors=True)
     for old in [*OUT_DIR.glob("Omarchy *"), *PREVIEW_DIR.glob("*.svg")]:
         old.unlink()
 
@@ -184,6 +293,10 @@ def main():
         extra_lines = "\n".join(f"{k} = {v}" for k, v in icon.items())
         (OUT_DIR / name).write_text(f'{header}{body.rstrip(chr(10))}\n\n{EXTRAS_HEADER}\n{extra_lines}\n')
         (PREVIEW_DIR / f"{slug}.svg").write_text(preview_svg(body, name, icon))
+        app_dir = APPS_DIR / slug
+        app_dir.mkdir(parents=True)
+        for file_name, text in app_files(src, theme_dir, colors, name.removeprefix("Omarchy "), slug).items():
+            (app_dir / file_name).write_text(text)
         print(f"{slug:18} -> themes/{name}")
 
 

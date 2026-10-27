@@ -10,6 +10,9 @@ apps/<theme>/ gets matching themes for other apps: Neovim and btop (the
 theme's own file, or Omarchy's template), bat and tmux (built here from the
 same colors), and colors.json with the resolved palette.
 
+README.md's theme table and count are rebuilt to match. A theme without a
+screenshot yet shows its preview SVG instead (see screenshots.sh).
+
 Usage: ./generate.py [path-to-omarchy-checkout]
        (clones https://github.com/omacom/omarchy into a temp dir if omitted)
 """
@@ -26,6 +29,7 @@ from pathlib import Path
 OUT_DIR = Path(__file__).resolve().parent / "themes"
 PREVIEW_DIR = Path(__file__).resolve().parent / "previews"
 APPS_DIR = Path(__file__).resolve().parent / "apps"
+ROOT = Path(__file__).resolve().parent
 REPO = "https://github.com/omacom/omarchy"
 
 # Display names where title-casing the directory name isn't right.
@@ -262,6 +266,23 @@ def app_files(src, theme_dir, colors, name, slug):
     return files
 
 
+def update_readme(themes):
+    """Rebuilds the README's theme table and count. `themes`: (name, slug, mode)."""
+    readme = ROOT / "README.md"
+    text = readme.read_text()
+
+    def cell(name, slug, mode):
+        shot = f"screenshots/{slug}.png"
+        image = shot if (ROOT / shot).exists() else f"previews/{slug}.svg"
+        return f'<td align="center" width="50%"><img src="{image}" alt="{name}"><br><b>{name}</b> <sub>{mode}</sub></td>'
+
+    rows = ["<tr>\n" + "\n".join(cell(*t) for t in themes[i : i + 2]) + "\n</tr>" for i in range(0, len(themes), 2)]
+    text = re.sub(r"<table>\n.*?\n</table>", lambda _: "<table>\n" + "\n".join(rows) + "\n</table>", text, flags=re.S)
+    text = re.sub(r"All \d+ \[Omarchy\]", f"All {len(themes)} [Omarchy]", text)
+    text = re.sub(r"themes-\d+-", f"themes-{len(themes)}-", text)
+    readme.write_text(text)
+
+
 def main():
     if len(sys.argv) > 1:
         src = Path(sys.argv[1])
@@ -280,6 +301,7 @@ def main():
     for old in [*OUT_DIR.glob("Omarchy *"), *PREVIEW_DIR.glob("*.svg")]:
         old.unlink()
 
+    listed = []
     for colors_file in sorted(src.glob("themes/*/colors.toml")):
         slug = colors_file.parent.name
         theme_dir = colors_file.parent
@@ -297,7 +319,10 @@ def main():
         app_dir.mkdir(parents=True)
         for file_name, text in app_files(src, theme_dir, colors, name.removeprefix("Omarchy "), slug).items():
             (app_dir / file_name).write_text(text)
+        listed.append((name.removeprefix("Omarchy "), slug, "light" if is_light(colors) else "dark"))
         print(f"{slug:18} -> themes/{name}")
+
+    update_readme(sorted(listed))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,51 @@
+name: Sync themes
+
+on:
+  schedule:
+    - cron: "30 6 * * *" # every day at 06:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Clone Omarchy
+        run: git clone --quiet --depth 1 https://github.com/omacom/omarchy "$RUNNER_TEMP/omarchy"
+
+      - name: Regenerate themes
+        id: generate
+        run: |
+          python generate.py "$RUNNER_TEMP/omarchy"
+          echo "commit=$(git -C "$RUNNER_TEMP/omarchy" rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Commit changes
+        run: |
+          git add -A
+          # Every file names the Omarchy commit it came from; a new commit
+          # alone, with no theme changes, isn't worth committing.
+          if git diff --cached --quiet -I '^# Ported from'; then
+            echo "No theme changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          {
+            echo "Sync themes from Omarchy ${{ steps.generate.outputs.commit }}"
+            echo
+            # New and removed themes; other changes are colors in existing ones.
+            git diff --cached --name-status --diff-filter=AD -- themes
+          } | git commit --quiet --file -
+          git push

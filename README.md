@@ -102,7 +102,7 @@ Everything in `themes/`, `apps/` and `previews/` is generated from [Omarchy](htt
 ./generate.py ~/src/omarchy   # or use a local Omarchy checkout
 ```
 
-It needs Python 3.11 or newer and nothing else. When Omarchy adds a theme, running it is all it takes.
+It needs Python 3.11 or newer and nothing else. A [GitHub Action](.github/workflows/sync.yml) runs it every day, so new Omarchy themes show up here on their own; a new theme shows its color preview until someone adds a screenshot.
 
 To refresh the screenshots on a Mac, run `./screenshots.sh` (or `./screenshots.sh "Tokyo Night"` for one). It opens Ghostty, so your terminal needs Screen Recording permission.
 

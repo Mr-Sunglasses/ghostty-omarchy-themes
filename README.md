@@ -2,9 +2,9 @@
 
 # Omarchy themes for Ghostty
 
-All 22 [Omarchy](https://github.com/omacom/omarchy) themes for the [Ghostty](https://ghostty.org) terminal, on macOS and Linux.
+All 23 [Omarchy](https://github.com/omacom/omarchy) themes for the [Ghostty](https://ghostty.org) terminal, on macOS and Linux.
 
-[![Themes](https://img.shields.io/badge/themes-22-7aa2f7)](#themes) [![License](https://img.shields.io/github/license/Mr-Sunglasses/ghostty-omarchy-themes?color=bb9af7)](LICENSE)
+[![Themes](https://img.shields.io/badge/themes-23-7aa2f7)](#themes) [![License](https://img.shields.io/github/license/Mr-Sunglasses/ghostty-omarchy-themes?color=bb9af7)](LICENSE)
 
 <img src="screenshots/hero.png" alt="Tokyo Night, Catppuccin Latte, Gruvbox and Rose Pine Dawn in Ghostty" width="820">
 
@@ -50,22 +50,22 @@ Use any of these as `theme = Omarchy <name>`.
 </tr>
 <tr>
 <td align="center" width="50%"><img src="screenshots/hackerman.png" alt="Hackerman"><br><b>Hackerman</b> <sub>dark</sub></td>
+<td align="center" width="50%"><img src="screenshots/jade-horse.png" alt="Jade Horse"><br><b>Jade Horse</b> <sub>dark</sub></td>
+</tr>
+<tr>
 <td align="center" width="50%"><img src="screenshots/kanagawa.png" alt="Kanagawa"><br><b>Kanagawa</b> <sub>dark</sub></td>
-</tr>
-<tr>
 <td align="center" width="50%"><img src="screenshots/last-horizon.png" alt="Last Horizon"><br><b>Last Horizon</b> <sub>dark</sub></td>
+</tr>
+<tr>
 <td align="center" width="50%"><img src="screenshots/lumon.png" alt="Lumon"><br><b>Lumon</b> <sub>dark</sub></td>
-</tr>
-<tr>
 <td align="center" width="50%"><img src="screenshots/lupine.png" alt="Lupine"><br><b>Lupine</b> <sub>light</sub></td>
+</tr>
+<tr>
 <td align="center" width="50%"><img src="screenshots/matte-black.png" alt="Matte Black"><br><b>Matte Black</b> <sub>dark</sub></td>
-</tr>
-<tr>
 <td align="center" width="50%"><img src="screenshots/miasma.png" alt="Miasma"><br><b>Miasma</b> <sub>dark</sub></td>
-<td align="center" width="50%"><img src="screenshots/nord.png" alt="Nord"><br><b>Nord</b> <sub>dark</sub></td>
 </tr>
 <tr>
-<td align="center" width="50%"><img src="screenshots/osaka-jade.png" alt="Osaka Jade"><br><b>Osaka Jade</b> <sub>dark</sub></td>
+<td align="center" width="50%"><img src="screenshots/nord.png" alt="Nord"><br><b>Nord</b> <sub>dark</sub></td>
 <td align="center" width="50%"><img src="screenshots/retro-82.png" alt="Retro 82"><br><b>Retro 82</b> <sub>dark</sub></td>
 </tr>
 <tr>
@@ -74,10 +74,13 @@ Use any of these as `theme = Omarchy <name>`.
 </tr>
 <tr>
 <td align="center" width="50%"><img src="screenshots/solitude.png" alt="Solitude"><br><b>Solitude</b> <sub>dark</sub></td>
-<td align="center" width="50%"><img src="screenshots/tokyo-night.png" alt="Tokyo Night"><br><b>Tokyo Night</b> <sub>dark</sub></td>
+<td align="center" width="50%"><img src="screenshots/starship.png" alt="Starship"><br><b>Starship</b> <sub>dark</sub></td>
 </tr>
 <tr>
+<td align="center" width="50%"><img src="screenshots/tokyo-night.png" alt="Tokyo Night"><br><b>Tokyo Night</b> <sub>dark</sub></td>
 <td align="center" width="50%"><img src="screenshots/vantablack.png" alt="Vantablack"><br><b>Vantablack</b> <sub>dark</sub></td>
+</tr>
+<tr>
 <td align="center" width="50%"><img src="screenshots/white.png" alt="White"><br><b>White</b> <sub>light</sub></td>
 </tr>
 </table>
